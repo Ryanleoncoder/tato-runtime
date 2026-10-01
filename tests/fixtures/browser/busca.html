@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Busca</title></head>
+<body>
+  <form onsubmit="event.preventDefault(); document.getElementById('resultado').textContent = 'Resultados para ' + document.getElementById('q').value;">
+    <label for="q">Pesquisar</label>
+    <input id="q" name="q" type="search">
+  </form>
+  <h1 id="resultado"></h1>
+</body>
+</html>

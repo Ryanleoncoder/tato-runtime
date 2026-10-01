@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tato</title>
+<style>
+  body { width: 300px; margin: 0; padding: 18px; background: #faf8f2; color: #1f1f1f; font: 14px system-ui; }
+  h1 { margin: 0 0 7px; font-size: 17px; }
+  p { line-height: 1.5; color: #57534e; }
+  button { width: 100%; margin-top: 4px; padding: 10px; border: 0; border-radius: 8px; background: #18181b; color: white; font-weight: 650; cursor: pointer; }
+  button[hidden] { display: none; }
+  #status { margin-bottom: 0; min-height: 20px; color: #1f1f1f; }
+</style>
+<h1>Tato no seu Chrome</h1>
+<p>O agente só opera as abas que esta extensão abrir. Com o servidor local aberto, a conexão é sozinha.</p>
+<p id="status" role="status"></p>
+<button id="tentar" hidden>Tentar agora</button>
+<script src="popup.js"></script>
+</html>

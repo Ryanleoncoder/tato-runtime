@@ -1,0 +1,455 @@
+[
+ {
+  "name": "browser",
+  "description": "Abre e opera uma aba própria no Chrome da pessoa: lê, clica, preenche e rola. Use para tarefa num site; programa do computador vai pelo `computador`.\n\nComece com `navegar` (`url`): a resposta já traz a árvore da página, com um `ref` em cada elemento (`e8`, `e23`). Mire `clicar` e `digitar` por um `ref` que você viu, nunca inventado; o `ref` serve só para mirar e não vai para a resposta. `digitar` sem `ref` escreve no campo em foco; `enviar: true` aperta Enter depois. `snapshot` lê a página de novo; `imagens` tira um print, só quando o texto não bastar; `console` traz as mensagens do console.\n\nEm `clicar` e `digitar`, declare `consequencia`: `nenhuma` para filtro, menu, busca ou paginação; `comunicar` para enviar, publicar ou se candidatar. Sem declarar, a pessoa é perguntada.\n\nLeia o estado depois de cada ação; se nada mudou, procure o bloqueio em vez de repetir. O que não aparece na leitura costuma estar a um clique (dentro do item, do card) ou só na tela: abra o item ou peça `imagens`.\n\nQuando já conhece a página, use `roteiro` (`passos`): ações (`navegar`, `clicar`, `digitar`, `rolar`) e controles (`esperar` e `conferir` com `texto`, `imagens`, `pensar` para ler a página e voltar a decidir). O roteiro para no primeiro `conferir` que falhar e devolve a página. Logo depois de um `navegar` no roteiro, mire por `nome`, o texto do elemento. Exemplo: `{\"acao\":\"roteiro\",\"argumentos\":{\"passos\":[{\"acao\":\"digitar\",\"argumentos\":{\"ref\":\"e3\",\"texto\":\"fones\",\"enviar\":true},\"consequencia\":\"nenhuma\"},{\"acao\":\"esperar\",\"argumentos\":{\"texto\":\"Resultados\"}},{\"acao\":\"pensar\"}]}}`.\n\nA aba continua nos próximos turnos da conversa; `encerrar` só quando a pessoa pedir.",
+  "parameters": {
+   "type": "object",
+   "properties": {
+    "acao": {
+     "type": "string",
+     "enum": [
+      "snapshot",
+      "console",
+      "imagens",
+      "clicar",
+      "digitar",
+      "navegar",
+      "rolar",
+      "roteiro",
+      "encerrar"
+     ]
+    },
+    "argumentos": {
+     "type": "object",
+     "properties": {
+      "url": {
+       "type": "string"
+      },
+      "ref": {
+       "type": "string"
+      },
+      "nome": {
+       "type": "string",
+       "description": "Em `clicar`/`digitar` sem `ref`, o texto do elemento (como na leitura)."
+      },
+      "texto": {
+       "type": "string"
+      },
+      "enviar": {
+       "type": "boolean",
+       "description": "Em `digitar`, aperta Enter depois do texto (uma busca sai assim)."
+      },
+      "passos": {
+       "type": "array"
+      },
+      "completo": {
+       "type": "boolean"
+      }
+     }
+    },
+    "consequencia": {
+     "type": "string",
+     "enum": [
+      "nenhuma",
+      "comunicar",
+      "transmitir_dado",
+      "apagar",
+      "financeira",
+      "conta",
+      "captcha",
+      "contornar_seguranca"
+     ],
+     "description": "Em clicar/digitar: o que a acao causa fora da pagina. Sem declarar, pergunta."
+    },
+    "provider": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": true,
+   "required": [
+    "acao"
+   ]
+  },
+  "prazo_s": 90
+ },
+ {
+  "name": "computador",
+  "description": "Vê a tela e usa o mouse e o teclado de verdade. Use para programas do computador e para o que o `browser` não alcança; tarefa num site vai melhor pelo `browser`.\n\nOriente-se com `ver` e `marcar: true`: o print vem com um número em cada elemento. Para conferir um passo pequeno, `elementos` lista os mesmos itens em texto, sem imagem. Mire pelo número (`elemento: n`); sem número, pela coordenada do print, nunca por palpite. `ler` traz o texto da janela da frente; com `procurar`, só as linhas com o termo.\n\nDepois de cada gesto vem um `veredito`: `confirmado` (não repita), `mudou` (confira em `mudou` se foi o esperado), `sem_efeito_aparente` (não repita; siga o `proximo`) ou `nao_da_para_confirmar` (confira no print). `na_janela` diz onde o gesto caiu: se não é o programa pedido, foi no lugar errado.\n\nProgramas: `programas` com `nome` diz se está aberto, na bandeja ou instalado. Aberto, `focar` com parte do título; fechado, `abrir` com o nome do menu Iniciar. App que acabou de abrir pode ficar atrás: confira em `janelas` antes de abrir de novo. Programa com abas (Bloco de notas, navegador) pode abrir na janela da pessoa: para não mexer no que é dela, abra uma janela nova pelo atalho do programa. `fechar` com parte do título fecha a janela, como o X; o programa ainda pergunta se quer salvar.\n\nTexto: clique no campo e use `digitar`. `ritmo`: `natural` (pausas de mão, para site), `rapido` ou `instantaneo` (tudo de uma vez, para app local), `automatico` (padrão: rápido nos editores, natural no resto). Na barra de endereço do navegador, aperte `delete` antes do `enter`, ou ele completa com outra página do histórico. `tecla` aperta uma combinação (`ctrl+s`), segura com `segurar` ou manda uma `sequencia`. `invocar` e `definir_valor` agem no controle pela acessibilidade, sem mouse.\n\nQuando já sabe o caminho, mande os gestos seguidos na mesma resposta; se um falhar, os seguintes não rodam.\n\nJogo, editor de imagem e modelagem desenham a tela: a lista vem quase vazia e o print orienta. `ver` com `regiao` amplia um pedaço pequeno; `esperar` com `ate_mudar` espera a animação em vez de adivinhar o tempo; `arrastar` e `rolar` aceitam `botao` e `com` (modificadores).\n\nPara navegar pela tela, use o Chrome que o campo `navegador` do primeiro resultado indica. Carrossel e menu animado andam um clique por vez.\n\nSempre: código no celular e login passam para a pessoa com `pedir_a_pessoa`, e aí tudo é recusado até ela devolver. O primeiro gesto de cada turno pede aprovação. Fale com a pessoa pelo `dizer`, que aparece na moldura, e chame `encerrar` quando parar de usar a tela.",
+  "parameters": {
+   "type": "object",
+   "properties": {
+    "acao": {
+     "type": "string",
+     "enum": [
+      "ver",
+      "elementos",
+      "janelas",
+      "clicar",
+      "clicar_duas",
+      "clicar_direito",
+      "mover",
+      "arrastar",
+      "rolar",
+      "digitar",
+      "tecla",
+      "esperar",
+      "encerrar",
+      "pedir_a_pessoa",
+      "invocar",
+      "definir_valor",
+      "focar",
+      "programas",
+      "abrir",
+      "fechar",
+      "ler"
+     ]
+    },
+    "nome": {
+     "type": "string",
+     "description": "Em `programas`, o programa procurado (diz se roda sem janela e se está instalado); em `abrir`, o nome do programa como aparece no menu Iniciar."
+    },
+    "janela": {
+     "type": "string",
+     "description": "Em `focar` e `fechar`, parte do titulo da janela, como aparece em `janelas`."
+    },
+    "valor": {
+     "type": "string",
+     "description": "Em `definir_valor`, o texto do campo ou o nome da opcao da lista."
+    },
+    "motivo": {
+     "type": "string",
+     "description": "Em `pedir_a_pessoa`, o passo que e da pessoa (ex. fazer login no portal)."
+    },
+    "marcar": {
+     "type": "boolean",
+     "description": "Em `ver`, numera os elementos da janela no print; vale para os prints seguintes do turno."
+    },
+    "elemento": {
+     "type": "integer",
+     "minimum": 1,
+     "description": "O numero observado na ultima leitura (`elementos` ou `ver` com `marcar`), sempre a partir de 1; nunca use 0. Obrigatorio em `invocar` e `definir_valor`."
+    },
+    "x": {
+     "type": "number",
+     "description": "Coordenada no print (clicar, mover, arrastar, rolar)."
+    },
+    "y": {
+     "type": "number",
+     "description": "Coordenada no print."
+    },
+    "confiar_no_print": {
+     "type": "boolean",
+     "description": "Em clique ou arrasto por coordenada depois de outros gestos: confirma que a tela em volta do alvo mudou porque você esperava (pintar sobre o que acabou de desenhar)."
+    },
+    "para_x": {
+     "type": "number",
+     "description": "Em `arrastar`, o destino no print."
+    },
+    "para_y": {
+     "type": "number",
+     "description": "Em `arrastar`, o destino no print."
+    },
+    "direcao": {
+     "type": "string",
+     "enum": [
+      "baixo",
+      "cima",
+      "esquerda",
+      "direita"
+     ]
+    },
+    "quantidade": {
+     "type": "integer",
+     "description": "Em `rolar`, cliques de roda (padrao 3)."
+    },
+    "texto": {
+     "type": "string",
+     "description": "Em `digitar`."
+    },
+    "ritmo": {
+     "type": "string",
+     "enum": [
+      "automatico",
+      "natural",
+      "rapido",
+      "instantaneo"
+     ],
+     "description": "Em `digitar`: automatico (padrao) acelera editores locais conhecidos e usa pausas naturais nos demais programas; rapido envia teclas com pausa curta; instantaneo manda o texto inteiro de uma vez; natural digita caractere por caractere com pausas variaveis."
+    },
+    "tecla": {
+     "type": "string",
+     "description": "Em `tecla`, a combinacao, como `ctrl+s` ou `enter`."
+    },
+    "segurar": {
+     "type": "number",
+     "description": "Em `tecla`, quantos segundos a combinacao fica apertada (maximo 10), para andar ou correr num jogo; solta sozinha no fim."
+    },
+    "segundos": {
+     "type": "number",
+     "description": "Em `esperar` (maximo 30)."
+    },
+    "dizer": {
+     "type": "string",
+     "description": "Em qualquer acao, uma frase curta (ate 120 caracteres) que aparece na caixinha da moldura para a pessoa, que nao ve o chat enquanto voce usa a tela."
+    },
+    "procurar": {
+     "type": "string",
+     "description": "Em `ler`, so as linhas com este termo (como \"R$\"), cada uma com a de antes e a de depois: le a janela inteira e devolve o que interessa."
+    },
+    "contexto": {
+     "type": "integer",
+     "description": "Em `ler` com `procurar`, quantas linhas antes e depois de cada achado (padrao 1, ate 6)."
+    },
+    "ate_mudar": {
+     "type": "boolean",
+     "description": "Em `esperar`, volta assim que a tela (ou a `regiao`) mudar, ate `segundos`."
+    },
+    "regiao": {
+     "type": "object",
+     "description": "Em `ver`, so este pedaco, ampliado para ler (menu de jogo, painel de editor); em `esperar` com `ate_mudar`, so este pedaco e vigiado. No espaco do print.",
+     "properties": {
+      "x": {
+       "type": "number"
+      },
+      "y": {
+       "type": "number"
+      },
+      "largura": {
+       "type": "number"
+      },
+      "altura": {
+       "type": "number"
+      }
+     }
+    },
+    "sequencia": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "Em `tecla`, varias teclas em ordem numa chamada, como [\"direita\", \"direita\", \"z\"]; \"cima:0.6\" segura 0,6 s. Ate 40 teclas."
+    },
+    "pausa": {
+     "type": "number",
+     "description": "Em `tecla` com `sequencia`, segundos entre uma tecla e a outra (padrao 0,15)."
+    },
+    "botao": {
+     "type": "string",
+     "enum": [
+      "esquerdo",
+      "direito",
+      "meio"
+     ],
+     "description": "Em `arrastar`, o botao do mouse (padrao esquerdo)."
+    },
+    "com": {
+     "type": "string",
+     "description": "Em `arrastar` e `rolar`, modificadores segurados durante o gesto, como `shift` ou `ctrl+alt`."
+    },
+    "depois": {
+     "type": "string",
+     "enum": [
+      "texto",
+      "print",
+      "nada"
+     ],
+     "description": "Como conferir o gesto. `texto` (padrao) volta a lista de elementos, e o print so quando a janela nao se descreve."
+    },
+    "ver_depois": {
+     "type": "boolean",
+     "description": "Antigo; `depois` manda. Falso e o mesmo que `depois: nada`, verdadeiro o mesmo que `depois: print`."
+    }
+   },
+   "additionalProperties": true,
+   "required": [
+    "acao"
+   ]
+  },
+  "prazo_s": 60,
+  "prazo_por_caractere_s": 0.25,
+  "editores_rapidos": [
+   "notepad.exe",
+   "code.exe",
+   "codium",
+   "codium.exe",
+   "notepad++.exe",
+   "sublime_text.exe",
+   "gedit",
+   "kate",
+   "mousepad"
+  ]
+ },
+ {
+  "name": "gravacao",
+  "annotations": {
+   "readOnlyHint": false,
+   "destructiveHint": false,
+   "idempotentHint": false,
+   "openWorldHint": false
+  },
+  "description": "Grava, inspeciona e edita uma captura local da tela. `iniciar` requer pedido da pessoa e aprovação específica; `parar` finaliza; `estado` consulta; `ver` retorna uma única prancha com até 12 quadros, por intervalo ou pelas maiores mudanças visuais (útil para algo que aparece e some); `montar` cria um GIF com cortes, legendas e trechos de outras gravações locais. Use `ver` com `de`/`ate` e `area` para investigar uma região, refinando o intervalo em novas chamadas, sem pedir centenas de imagens. Não publique ou compartilhe a captura sem revisar dados pessoais.",
+  "parameters": {
+   "type": "object",
+   "properties": {
+    "acao": {
+     "type": "string",
+     "enum": [
+      "iniciar",
+      "parar",
+      "estado",
+      "ver",
+      "montar"
+     ]
+    },
+    "id": {
+     "type": "string",
+     "description": "Id devolvido por iniciar/parar; obrigatório em ver e montar."
+    },
+    "fps": {
+     "type": "number",
+     "minimum": 1,
+     "maximum": 12,
+     "description": "Em iniciar, quadros por segundo (padrão 10)."
+    },
+    "largura": {
+     "type": "integer",
+     "minimum": 320,
+     "maximum": 1920,
+     "description": "Em iniciar, largura máxima do quadro (padrão 960)."
+    },
+    "minutos": {
+     "type": "number",
+     "minimum": 0.1,
+     "maximum": 15,
+     "description": "Em iniciar, limite automático de tempo (padrão 15)."
+    },
+    "caixa": {
+     "type": "array",
+     "minItems": 4,
+     "maxItems": 4,
+     "description": "Em iniciar, recorte opcional da tela [x0,y0,x1,y1]."
+    },
+    "amostras": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 12,
+     "description": "Em ver, número máximo de miniaturas numa única prancha (padrão 8)."
+    },
+    "modo": {
+     "type": "string",
+     "enum": [
+      "intervalo",
+      "mudancas"
+     ],
+     "description": "Em ver: amostras espaçadas ou pares antes/depois das maiores mudanças visuais. Para mudancas, use no máximo 30 s por chamada."
+    },
+    "de": {
+     "type": "number",
+     "minimum": 0,
+     "description": "Em ver, segundo inicial a investigar."
+    },
+    "ate": {
+     "type": "number",
+     "minimum": 0,
+     "description": "Em ver, segundo final a investigar."
+    },
+    "area": {
+     "type": "array",
+     "minItems": 4,
+     "maxItems": 4,
+     "description": "Em ver, região [x0,y0,x1,y1] da gravação para medir mudanças e ampliar na prancha."
+    },
+    "trechos": {
+     "type": "array",
+     "minItems": 1,
+     "maxItems": 20,
+     "description": "Em montar, cortes em ordem; omitir usa a gravação inteira.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "titulo": {
+        "type": "string",
+        "description": "Cartela: título exibido antes do trecho."
+       },
+       "id": {
+        "type": "string",
+        "description": "Trecho: outra gravação local finalizada a inserir nesta montagem; omitir usa o id principal."
+       },
+       "sub": {
+        "type": "string",
+        "description": "Cartela: subtítulo opcional."
+       },
+       "ms": {
+        "type": "integer",
+        "description": "Cartela: duração em milissegundos."
+       },
+       "de": {
+        "type": "number",
+        "description": "Trecho: segundo inicial da gravação."
+       },
+       "ate": {
+        "type": "number",
+        "description": "Trecho: segundo final da gravação."
+       },
+       "velocidade": {
+        "type": "number",
+        "description": "Trecho: aceleração, de 0.25 a 20 (padrão 1)."
+       },
+       "legenda": {
+        "type": "string",
+        "maxLength": 120,
+        "description": "Trecho: texto sobreposto durante este trecho do GIF."
+       },
+       "parado": {
+        "type": "number",
+        "description": "Trecho: limiar de mudança visual de 0 a 1 para encurtar esperas."
+       },
+       "area": {
+        "type": "array",
+        "description": "Região [x0,y0,x1,y1] medida para detectar espera."
+       },
+       "recorte": {
+        "type": "array",
+        "description": "Região [x0,y0,x1,y1] que aparece no GIF."
+       },
+       "borrar": {
+        "type": "array",
+        "description": "Intervalos a esconder; até 10 por trecho.",
+        "items": {
+         "type": "object",
+         "properties": {
+          "de": {
+           "type": "number"
+          },
+          "ate": {
+           "type": "number"
+          },
+          "caixa": {
+           "type": "array",
+           "description": "Região [x0,y0,x1,y1] a borrar."
+          }
+         },
+         "required": [
+          "de",
+          "ate",
+          "caixa"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "nome": {
+     "type": "string",
+     "maxLength": 60,
+     "description": "Em montar, nome do arquivo do GIF, sem extensão (padrão resumo)."
+    }
+   },
+   "required": [
+    "acao"
+   ],
+   "additionalProperties": false
+  },
+  "prazo_s": 120
+ }
+]

@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Contato</title></head>
+<body>
+  <label for="assunto">Assunto</label>
+  <select id="assunto" onchange="document.getElementById('eventos').textContent += 'change:' + this.value + ' '">
+    <option value="">Escolha</option><option>Dúvida</option><option>Parceria</option><option>Suporte</option>
+  </select>
+  <p id="eventos"></p>
+</body>
+</html>
