@@ -118,3 +118,46 @@ class TestNoComputador:
         ferramentas = json.loads((pathlib.Path(tato.__file__).parent / "ferramentas.json").read_text(encoding="utf-8"))
         propriedades = next(f for f in ferramentas if f["name"] == "computador")["parameters"]["properties"]
         assert {"programas", "abrir"} <= set(propriedades["acao"]["enum"]) and "nome" in propriedades
+
+
+class _FrenteQueTroca(Falso):
+    def __init__(self):
+        super().__init__()
+        self.frente = "Chrome"
+
+    def janelas(self):
+        return [{"titulo": self.frente, "em_foco": True, "x": 0, "y": 0, "largura": 2560, "altura": 1440}]
+
+
+class TestFocoQueMuda:
+    @pytest.fixture
+    def frente(self, monkeypatch):
+        monkeypatch.setattr(computador, "_ESPERA_DEPOIS_DO_GESTO", 0)
+        backend = _FrenteQueTroca()
+        computador.usar_backend(backend)
+        yield backend
+        computador._limpar_para_testes()
+        computador.usar_backend(None)
+
+    async def test_teclado_em_outra_janela_avisa(self, frente):
+        _aprovar("s1")
+        state = _state()
+
+        async def turno():
+            await computador.executar({"acao": "clicar", "x": 728, "y": 410, "depois": "nada"}, state)
+            frente.frente = "Aviso de extensão"
+            return await computador.executar({"acao": "digitar", "texto": "github.com", "depois": "nada"}, state)
+
+        r = await _no_turno(turno())
+        assert r["foco_mudou"]["de"] == "Chrome" and r["foco_mudou"]["para"] == "Aviso de extensão"
+
+    async def test_mesma_janela_nao_avisa(self, frente):
+        _aprovar("s1")
+        state = _state()
+
+        async def turno():
+            await computador.executar({"acao": "clicar", "x": 728, "y": 410, "depois": "nada"}, state)
+            return await computador.executar({"acao": "digitar", "texto": "github.com", "depois": "nada"}, state)
+
+        r = await _no_turno(turno())
+        assert r["ok"] and "foco_mudou" not in r
