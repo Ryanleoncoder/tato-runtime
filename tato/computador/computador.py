@@ -1508,6 +1508,7 @@ async def _gesticular(backend: BackendDoComputador, turno: _Turno, state: Any, a
             janela = ""
     if janela:
         resultado["na_janela"] = janela
+        resultado.update(_foco_mudou(turno, acao, argumentos, janela))
     modo = _modo_depois(argumentos)
     if modo != "nada":
         await asyncio.sleep(_ESPERA_DEPOIS_DO_GESTO)
@@ -1584,6 +1585,19 @@ def _so_atalho_do_sistema(argumentos: Dict[str, Any]) -> bool:
     except ErroDoComputador:
         return False
     return bool(combinacoes) and all("win" in mods or tecla == "win" for mods, tecla in combinacoes)
+
+
+def _foco_mudou(turno: _Turno, acao: str, argumentos: Dict[str, Any], janela: str) -> Dict[str, Any]:
+    """Tecla vai para a janela da frente. Se ela trocou desde o último gesto, o texto pode
+    ter caído num aviso ou em outro programa, e o `ok` sozinho não mostra isso."""
+    anterior = turno.extras.get("janela_do_ultimo_gesto")
+    turno.extras["janela_do_ultimo_gesto"] = janela
+    if acao not in ("digitar", "tecla") or argumentos.get("_alvo") is not None:
+        return {}
+    if not anterior or anterior == janela:
+        return {}
+    return {"foco_mudou": {"de": anterior, "para": janela,
+                           "nota": "confira se o teclado devia ir para esta janela antes de seguir"}}
 
 
 async def _guardar_frente(backend: BackendDoComputador, turno: _Turno, acao: str,
