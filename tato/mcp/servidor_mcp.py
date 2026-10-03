@@ -358,7 +358,14 @@ def _conteudo(resultado: Any, tela: Optional[dict]) -> dict:
     return {"content": partes, "isError": bool(falhou)}
 
 
+def _stdio_em_utf8(entrada, saida) -> None:
+    """Em pipe, o Python do Windows usa a página de código regional; o protocolo é UTF-8."""
+    entrada.reconfigure(encoding="utf-8", errors="replace")
+    saida.reconfigure(encoding="utf-8", newline="\n")
+
+
 async def _principal(aprovacao_no_cliente: bool) -> None:
+    _stdio_em_utf8(sys.stdin, sys.stdout)
     saida = sys.stdout
     # O stdout é do protocolo: qualquer print perdido vai para o stderr.
     sys.stdout = sys.stderr

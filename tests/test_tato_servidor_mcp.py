@@ -248,3 +248,23 @@ async def test_com_aprovacao_no_cliente_nao_pergunta_de_novo(falso):
     resultado = await cliente.chamar("computador", {"acao": "clicar", "x": 10, "y": 10})
     assert not resultado["isError"] and cliente.perguntas == 0
     assert any(g[0] == "botao" for g in falso.gestos)
+
+
+def test_stdio_fala_utf8_mesmo_com_pagina_de_codigo_regional():
+    import io
+    import json
+
+    from tato.mcp.servidor_mcp import _stdio_em_utf8
+
+    pedido = json.dumps({"dizer": "Abrindo a configuração"}, ensure_ascii=False) + "\n"
+    entrada = io.TextIOWrapper(io.BytesIO(pedido.encode("utf-8")), encoding="cp1252")
+    bruto = io.BytesIO()
+    saida = io.TextIOWrapper(bruto, encoding="cp1252", newline="\r\n")
+
+    _stdio_em_utf8(entrada, saida)
+    lido = json.loads(entrada.readline())
+    saida.write(json.dumps({"titulo": "Sem título"}, ensure_ascii=False) + "\n")
+    saida.flush()
+
+    assert lido["dizer"] == "Abrindo a configuração"
+    assert bruto.getvalue() == '{"titulo": "Sem título"}\n'.encode("utf-8")
