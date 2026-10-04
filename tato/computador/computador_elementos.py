@@ -103,6 +103,22 @@ def juntar(camadas: List[Camada]) -> List[Elemento]:
 
 
 def _em_ordem_de_leitura(elementos: List[Elemento]) -> List[Elemento]:
+    # O espaço entre colunas separa regiões; uma barra de botões continua numa linha.
+    faixas = sorted((e.x, e.x + e.largura) for e in elementos)
+    direita = faixas[0][1] if faixas else 0
+    for inicio, fim in faixas[1:]:
+        if inicio - direita >= 48:
+            esquerda = [e for e in elementos if e.x < inicio]
+            restante = [e for e in elementos if e.x >= inicio]
+            if (any(len({e.y // 12 for e in esquerda if e.x // 48 == coluna}) >= 2
+                    for coluna in {e.x // 48 for e in esquerda})
+                    and any(len({e.y // 12 for e in restante if e.x // 48 == coluna}) >= 2
+                            for coluna in {e.x // 48 for e in restante})
+                    and max(min(e.y for e in esquerda), min(e.y for e in restante))
+                    < min(max(e.y + e.altura for e in esquerda),
+                          max(e.y + e.altura for e in restante))):
+                return _em_ordem_de_leitura(esquerda) + _em_ordem_de_leitura(restante)
+        direita = max(direita, fim)
     # Linhas de 12 px: dois botões lado a lado na mesma barra ficam em ordem de leitura.
     return sorted(elementos, key=lambda e: (e.y // 12, e.x))
 

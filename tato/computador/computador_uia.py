@@ -352,6 +352,12 @@ def invocar(alvo: Elemento) -> str:
     raise ErroDoComputador("esse elemento não aceita ação pela acessibilidade; use clicar nele")
 
 
+def lista_editavel(alvo: Elemento) -> bool:
+    e = _achar(_uia(), alvo)
+    padrao = _padrao(e, _VALUE, "IUIAutomationValuePattern")
+    return padrao is not None and not bool(padrao.CurrentIsReadOnly)
+
+
 def escolher_opcao(alvo: Elemento, opcao: str) -> None:
     """Escolhe a opção da lista pelo nome, sem abrir o menu. Campo de texto
     não passa por aqui: texto é digitado (`focar` +
