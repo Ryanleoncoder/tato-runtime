@@ -230,6 +230,10 @@ class BackendDoComputador(ABC):
         o mouse (a janela dele vem para a frente)."""
         raise ErroDoComputador("este sistema não age pela acessibilidade; clique no campo e use digitar")
 
+    def lista_editavel(self, alvo) -> bool:
+        """Sem evidência de edição, a lista continua sendo seleção de opções."""
+        return False
+
     def escolher_opcao(self, alvo, opcao: str) -> None:
         """Escolhe a opção da lista pelo nome, pela acessibilidade."""
         raise ErroDoComputador("este sistema não age pela acessibilidade; clique na lista e escolha")

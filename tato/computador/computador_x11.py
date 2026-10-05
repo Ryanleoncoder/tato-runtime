@@ -127,6 +127,11 @@ class BackendX11(BackendDoComputador):
 
         focar(alvo)
 
+    def lista_editavel(self, alvo) -> bool:
+        from .computador_atspi import lista_editavel
+
+        return lista_editavel(alvo)
+
     def escolher_opcao(self, alvo, opcao: str) -> None:
         from .computador_atspi import escolher_opcao
 
@@ -466,8 +471,11 @@ class _Palco(threading.Thread):
         from .computador_desenho import onde_esta_o_mouse
 
         tela = self._d.screen()
-        perto = onde_esta_o_mouse(self._mouse(), (tela.width_in_pixels, tela.height_in_pixels), self._quadro)
-        if self._perto is not None and perto != self._perto:
+        mouse = self._mouse()
+        perto = onde_esta_o_mouse(mouse, (tela.width_in_pixels, tela.height_in_pixels), self._quadro)
+        segue = bool(self._quadro.etiqueta) and self._quadro.ponto is None
+        if ((self._perto is not None and perto != self._perto)
+                or (segue and mouse != getattr(self, "_mouse_desenhado", None))):
             self._redesenhar()
 
     def _janela(self):
@@ -493,6 +501,7 @@ class _Palco(threading.Thread):
         tela = self._d.screen()
         w, h = tela.width_in_pixels, tela.height_in_pixels
         mouse = self._mouse()
+        self._mouse_desenhado = mouse
         self._perto = onde_esta_o_mouse(mouse, (w, h), self._quadro)
         camada, regioes = desenhar((w, h), self._quadro, mouse, brilho=False)
         for janela in self._janelas.values():

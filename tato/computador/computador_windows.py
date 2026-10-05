@@ -312,6 +312,11 @@ class BackendWindows(BackendDoComputador):
 
         focar(alvo)
 
+    def lista_editavel(self, alvo) -> bool:
+        from .computador_uia import lista_editavel
+
+        return lista_editavel(alvo)
+
     def escolher_opcao(self, alvo, opcao: str) -> None:
         from .computador_uia import escolher_opcao
 
@@ -879,8 +884,11 @@ class _PalcoWindows(threading.Thread):
         from .computador_desenho import onde_esta_o_mouse
 
         tela = (self.u.GetSystemMetrics(0), self.u.GetSystemMetrics(1))
-        perto = onde_esta_o_mouse(self._mouse(), tela, self._quadro, self._rodape())
-        if self._perto is not None and perto != self._perto:
+        mouse = self._mouse()
+        perto = onde_esta_o_mouse(mouse, tela, self._quadro, self._rodape())
+        segue = bool(self._quadro.etiqueta) and self._quadro.ponto is None
+        if ((self._perto is not None and perto != self._perto)
+                or (segue and mouse != getattr(self, "_mouse_desenhado", None))):
             self._aplicar()
 
     def _aplicar(self) -> None:
@@ -892,6 +900,7 @@ class _PalcoWindows(threading.Thread):
         largura, altura = u.GetSystemMetrics(0), u.GetSystemMetrics(1)
         rodape = self._rodape()
         mouse = self._mouse()
+        self._mouse_desenhado = mouse
         self._perto = onde_esta_o_mouse(mouse, (largura, altura), self._quadro, rodape)
         camada, _ = desenhar((largura, altura), self._quadro, mouse, brilho=False, rodape=rodape)
         dados = bgra_premultiplicado(camada)

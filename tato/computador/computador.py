@@ -722,6 +722,21 @@ def _executar_gesto(backend: BackendDoComputador, acao: str, argumentos: Dict[st
                          _BOTOES[str(argumentos.get("botao") or "esquerdo").lower()],
                          _modificadores(argumentos.get("com")))
     elif acao == "rolar":
+        if argumentos.get("janela"):
+            janela = next((j for j in backend.janelas() if j.get("em_foco")), {})
+            if janela.get("titulo") != argumentos["janela"]:
+                backend.focar(str(argumentos["janela"]))
+                janela = next((j for j in backend.janelas() if j.get("em_foco")), {})
+            if all(chave in janela for chave in ("x", "y", "largura", "altura")):
+                x, y = (backend.posicao_do_mouse() if argumentos.get("x") is None else
+                        _para_tela(argumentos["x"], argumentos.get("y"), tamanho))
+                dentro = (janela["x"] <= x < janela["x"] + janela["largura"]
+                          and janela["y"] <= y < janela["y"] + janela["altura"])
+                if not dentro:
+                    if argumentos.get("x") is not None:
+                        raise ErroDoComputador("o ponto da rolagem está fora da janela alvo; confira as janelas")
+                    backend.mover(janela["x"] + janela["largura"] // 2,
+                                  janela["y"] + janela["altura"] // 2)
         if argumentos.get("x") is not None:
             backend.mover(*_para_tela(argumentos.get("x"), argumentos.get("y"), tamanho))
         quantidade = max(1, min(int(argumentos.get("quantidade") or 3), 20))
@@ -741,7 +756,7 @@ def _executar_gesto(backend: BackendDoComputador, acao: str, argumentos: Dict[st
         argumentos["_feito"] = backend.invocar(argumentos["_alvo"])
     elif acao == "definir_valor":
         alvo, valor = argumentos["_alvo"], str(argumentos.get("valor") or "")
-        if alvo.papel == "lista":
+        if alvo.papel == "lista" and not backend.lista_editavel(alvo):
             backend.escolher_opcao(alvo, valor)
             return
         # Texto é digitado, nunca posto direto no controle: o foco no campo
@@ -1192,6 +1207,7 @@ async def _executar(argumentos: Dict[str, Any], state: Any) -> Dict[str, Any]:
     if "cabecalho" not in turno.extras:
         turno.extras["cabecalho"] = await asyncio.to_thread(_cabecalho, sessao, backend)
     if acao in LEITURA:
+        await _guardar_janela(backend, turno)
         # Olhar também é usar o computador: moldura e passo no cartão, sem
         # pedir aprovação, porque ler não mexe em nada.
         if (motivo := _abrir_moldura(sessao, turno, backend)) is not None:
@@ -1453,6 +1469,13 @@ async def _ler(backend: BackendDoComputador, turno: _Turno, state: Any, acao: st
 
 async def _gesticular(backend: BackendDoComputador, turno: _Turno, state: Any, acao: str,
                       argumentos: Dict[str, Any], tamanho: Tuple[int, int], epoca: int) -> Dict[str, Any]:
+    if acao == "rolar":
+        argumentos["janela"] = (argumentos.get("janela")
+                               or getattr(argumentos.get("_alvo"), "janela", "")
+                               or turno.extras.get("janela_alvo", ""))
+        if not argumentos["janela"]:
+            return {"ok": False, "executado": False,
+                    "erro": "a janela da rolagem não foi identificada; leia as janelas ou indique janela"}
     descricao = descrever(acao, argumentos)
     _anunciar(turno, acao, argumentos)
     # A moldura do turno, guardada aqui: o Assumir pode tirá-la do turno no meio do gesto.
@@ -1480,7 +1503,8 @@ async def _gesticular(backend: BackendDoComputador, turno: _Turno, state: Any, a
         # já está lá. Pela acessibilidade o mouse fica parado, e os dois vão
         # sobre o elemento.
         alvo = argumentos.get("_alvo") if acao in PELA_ACESSIBILIDADE else None
-        ponto = getattr(alvo, "centro", None) or await asyncio.to_thread(backend.posicao_do_mouse)
+        ponto = (None if acao == "rolar" else
+                 getattr(alvo, "centro", None) or await asyncio.to_thread(backend.posicao_do_mouse))
         await asyncio.to_thread(moldura.gesto, etiqueta_do_gesto(acao, argumentos),
                                 acao.startswith("clicar") or acao == "invocar", ponto)
     except MolduraParada:
@@ -1600,9 +1624,20 @@ def _foco_mudou(turno: _Turno, acao: str, argumentos: Dict[str, Any], janela: st
                            "nota": "confira se o teclado devia ir para esta janela antes de seguir"}}
 
 
+async def _guardar_janela(backend: BackendDoComputador, turno: _Turno) -> None:
+    try:
+        titulo = next((j.get("titulo") for j in await asyncio.to_thread(backend.janelas)
+                       if j.get("em_foco")), "")
+        if titulo:
+            turno.extras["janela_alvo"] = str(titulo)
+    except Exception:
+        pass
+
+
 async def _guardar_frente(backend: BackendDoComputador, turno: _Turno, acao: str,
                          argumentos: Dict[str, Any]) -> None:
     """Guarda o programa da frente e os que tinham janela, para a trava do próximo gesto."""
+    await _guardar_janela(backend, turno)
     if acao == "tecla" and _so_atalho_do_sistema(argumentos):
         # O que o atalho abre aparece depois; o próximo gesto define a frente.
         turno.extras.pop("frente", None)

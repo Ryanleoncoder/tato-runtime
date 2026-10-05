@@ -220,6 +220,12 @@ def invocar(alvo: Elemento) -> str:
     return nomes[indice] or "ação padrão"
 
 
+def lista_editavel(alvo: Elemento) -> bool:
+    Atspi = _atspi()
+    no = _achar(Atspi, alvo)
+    return bool(no.get_state_set().contains(Atspi.StateType.EDITABLE))
+
+
 def escolher_opcao(alvo: Elemento, opcao: str) -> None:
     """Escolhe a opção da lista pelo nome, direto na lista. Campo de texto não
     passa por aqui: texto é digitado (`focar` + `digitar`)."""
