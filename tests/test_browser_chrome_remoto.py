@@ -47,11 +47,15 @@ class TestPeloTato:
         r = await ponte.pelo_tato({"comando": "reset", "conversa": "abc"})
         assert not r["ok"] and ponte.chamadas == []
 
-    async def test_endereco_interno_e_recusado(self):
+    async def test_o_que_nao_e_pagina_e_recusado_e_endereco_local_passa(self):
+        """A aba é do Chrome da pessoa: abre o que ela abriria, local inclusive."""
         ponte = PonteLigada()
-        acao = {"acao": "navegar", "argumentos": {"url": "http://169.254.169.254/"}}
+        acao = {"acao": "navegar", "argumentos": {"url": "file:///C:/Windows/win.ini"}}
         r = await ponte.pelo_tato({"comando": "execute", "conversa": "abc", "argumentos": {"action": acao}})
         assert not r["ok"] and ponte.chamadas == []
+        acao = {"acao": "navegar", "argumentos": {"url": "http://127.0.0.1:8000/"}}
+        await ponte.pelo_tato({"comando": "execute", "conversa": "abc", "argumentos": {"action": acao}})
+        assert ponte.chamadas, "endereço local chega à aba da pessoa"
 
     async def test_sem_extensao_diz_isso(self):
         r = await PonteChrome().pelo_tato({"comando": "show", "conversa": "abc"})

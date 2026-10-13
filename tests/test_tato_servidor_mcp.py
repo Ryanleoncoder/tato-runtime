@@ -161,7 +161,7 @@ async def test_o_turno_parado_fecha_e_a_moldura_sai(falso):
 async def test_a_politica_vale_antes_de_executar():
     cliente = Cliente()
     await cliente.iniciar()
-    resultado = await cliente.chamar("browser", {"acao": "navegar", "argumentos": {"url": "http://169.254.169.254/"}})
+    resultado = await cliente.chamar("browser", {"acao": "navegar", "argumentos": {"url": "file:///C:/Windows/win.ini"}})
     assert resultado["isError"] and "recusado" in resultado["content"][0]["text"]
 
 

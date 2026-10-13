@@ -94,12 +94,11 @@ async def test_acao_negada_antes_e_recusa_sem_pergunta(monkeypatch):
 
 
 @pytest.mark.parametrize("url", [
-    "http://169.254.169.254/latest/meta-data/",
-    "http://127.0.0.1:8000/",
     "file:///C:/Users/alguem/.ssh/id_rsa",
+    "javascript:alert(1)",
     "",
 ])
-def test_navegar_para_endereco_interno_e_recusado_mesmo_aprovado(monkeypatch, url):
+def test_navegar_para_o_que_nao_e_pagina_e_recusado_mesmo_aprovado(monkeypatch, url):
     monkeypatch.setattr(
         "tato.permissoes.avaliar",
         lambda *_a, **_k: {"permitido": True, "precisa_perguntar": False, "motivo": "permitir tudo"},
@@ -109,6 +108,15 @@ def test_navegar_para_endereco_interno_e_recusado_mesmo_aprovado(monkeypatch, ur
     )
     assert decisao.allowed is False
     assert "navegar recusado" in decisao.reason
+
+
+@pytest.mark.parametrize("url", ["http://127.0.0.1:8000/", "http://192.168.0.10/", "http://localhost:5173/"])
+def test_navegar_para_endereco_local_passa_no_navegador_da_pessoa(url):
+    """Validar a página que a pessoa está desenvolvendo é uso comum do navegador."""
+    decisao = portao.evaluate(
+        _state(), "browser", "abre", {"acao": "navegar", "argumentos": {"url": url}},
+    )
+    assert "navegar recusado" not in (decisao.reason or "")
 
 
 def test_navegar_para_url_publica_segue_para_autorizacao(monkeypatch):

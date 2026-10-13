@@ -122,8 +122,10 @@ confira dados pessoais antes de compartilhar.
   preenchimento automático do navegador) ou apertar combinações que derrubam a
   sessão ou apagam sem volta. Login e código de verificação passam para a
   pessoa com `pedir_a_pessoa`.
-- **No navegador:** endereços internos da rede são recusados, e ações que
-  enviam dados ou têm consequência pedem aprovação.
+- **No navegador:** abre página da web (http ou https), inclusive local, para o
+  agente conferir o site que você está construindo. Outros esquemas, como
+  `file://`, são recusados, e ações que enviam dados ou têm consequência pedem
+  aprovação.
 
 ## Jogos por turnos
 
@@ -210,7 +212,6 @@ Tudo por variável de ambiente, com padrões que funcionam sem configurar nada.
 | `TATO_NAVEGADOR_PERFIL` | `pessoa` | Em que Chrome navegar pela tela: `pessoa` (o seu, com suas contas) ou `agente` (perfil separado). |
 | `TATO_NAVEGADOR_AGENTE_NOME` | `Agente` | Nome do perfil separado: vira "Chrome do <nome>". Crie o atalho com `python -m tato.computador.perfil_do_agente <nome>`. |
 | `TATO_BROWSER_OCIOSO_MIN` | `0` | Fecha a sessão do navegador depois de tantos minutos parada; `0` não fecha. |
-| `TATO_ORIGENS_LOCAIS_LIBERADAS` | vazio | Endereços locais que o navegador pode abrir, como `http://localhost:3000`, separados por vírgula. |
 | `TATO_PORTA` | `47812` | Porta local onde a extensão encontra o Tato. |
 | `TATO_HOME` | `~/.tato` | Onde o Tato guarda o que precisa entre execuções. |
 

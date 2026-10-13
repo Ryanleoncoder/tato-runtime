@@ -94,12 +94,16 @@ async def test_a_aprovacao_vale_so_para_aquele_roteiro(provedor):
     assert (await browser_registry.despachar(outro, state)).get("precisa_permissao")
 
 
-def test_navegar_interno_dentro_do_roteiro_e_recusado():
-    decisao = portao.evaluate(EstadoDoTurno.new("x", "u"), "browser", "vai", {
-        "acao": "roteiro",
-        "argumentos": {"passos": [{"acao": "navegar", "argumentos": {"url": "http://169.254.169.254/"}}]},
-    })
-    assert decisao.allowed is False and "navegar recusado" in decisao.reason
+def test_navegar_no_roteiro_recusa_o_que_nao_e_pagina_e_aceita_endereco_local():
+    """A regra do navegador vale passo a passo dentro do roteiro."""
+    def roteiro(url):
+        return portao.evaluate(EstadoDoTurno.new("x", "u"), "browser", "vai", {
+            "acao": "roteiro", "argumentos": {"passos": [{"acao": "navegar", "argumentos": {"url": url}}]},
+        })
+
+    recusa = roteiro("file:///C:/Users/alguem/.ssh/id_rsa")
+    assert recusa.allowed is False and "navegar recusado" in recusa.reason
+    assert "navegar recusado" not in (roteiro("http://127.0.0.1:8000/").reason or "")
 
 
 def test_passo_inventado_e_recusado():

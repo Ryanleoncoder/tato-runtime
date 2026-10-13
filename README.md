@@ -134,8 +134,10 @@ check for personal data before sharing it.
   the browser's autofill) or press combinations that kill the session or delete
   irreversibly. Login and verification codes are handed to the person with
   `pedir_a_pessoa` (ask the person).
-- **In the browser:** internal network addresses are refused, and actions that
-  submit data or have consequences ask for approval.
+- **In the browser:** it opens web pages (http or https), local ones included,
+  so the agent can check the site you are building. Other schemes, like
+  `file://`, are refused, and actions that submit data or have consequences ask
+  for approval.
 
 ## Turn-based games
 
@@ -223,7 +225,6 @@ setup.
 | `TATO_NAVEGADOR_PERFIL` | `pessoa` | Which Chrome to browse through the screen: `pessoa` (yours, with your accounts) or `agente` (separate profile). |
 | `TATO_NAVEGADOR_AGENTE_NOME` | `Agente` | Name of the separate profile: it becomes "Chrome do <name>". Create the shortcut with `python -m tato.computador.perfil_do_agente <name>`. |
 | `TATO_BROWSER_OCIOSO_MIN` | `0` | Closes the browser session after this many idle minutes; `0` never closes it. |
-| `TATO_ORIGENS_LOCAIS_LIBERADAS` | empty | Local addresses the browser may open, like `http://localhost:3000`, comma-separated. |
 | `TATO_PORTA` | `47812` | Local port where the extension finds Tato. |
 | `TATO_HOME` | `~/.tato` | Where Tato keeps what it needs between runs. |
 

@@ -74,7 +74,7 @@ class Portao:
 
     def _navegador(self, argumentos: Dict[str, Any]) -> Decisao:
         from .navegador.browser_contracts import Action
-        from .navegador.web import UrlRecusada, validar_url
+        from .navegador.web import UrlRecusada, validar_url_do_navegador
         from .segredos import tem_segredo
 
         try:
@@ -88,9 +88,9 @@ class Portao:
         for passo in (a for a in acoes if a.tipo == "navegar"):
             url = str(passo.argumentos.get("url") or "")
             try:
-                validar_url(url)
+                validar_url_do_navegador(url)
             except UrlRecusada as exc:
-                return Decisao(False, f"navegar recusado: {exc}", ["url pública em http ou https"])
+                return Decisao(False, f"navegar recusado: {exc}", ["url em http ou https"])
             # Página com injeção pode mandar abrir `site/?key=sk-...`: a credencial sairia na requisição.
             if tem_segredo(url):
                 return Decisao(False, "navegar recusado: a URL carrega o que parece credencial",

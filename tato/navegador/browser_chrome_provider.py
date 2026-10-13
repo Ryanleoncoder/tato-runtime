@@ -27,7 +27,7 @@ class ChromeTabSession(BrowserCapability):
     async def execute(self, action: Action) -> Observation:
         if action.tipo == "navegar":
             # A extensão valida cada requisição de novo, inclusive redirects.
-            web.validar_url(str(action.argumentos.get("url") or ""))
+            web.validar_url_do_navegador(str(action.argumentos.get("url") or ""))
         resultado = await self._comando("execute", action=action.para_dict())
         return Observation(
             fonte=str(resultado.get("fonte") or "chrome_tab"),

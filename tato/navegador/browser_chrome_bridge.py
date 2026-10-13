@@ -180,7 +180,7 @@ class PonteChrome:
         identificador = str(mensagem.get("id") or "")
         url = str(mensagem.get("url") or "")
         try:
-            await asyncio.to_thread(web.validar_url, url)
+            await asyncio.to_thread(web.validar_url_do_navegador, url)
             permitido, motivo = True, ""
         except Exception as exc:
             permitido, motivo = False, str(exc)[:240]
@@ -202,7 +202,7 @@ class PonteChrome:
         try:
             acao = argumentos.get("action") or {}
             if comando == "execute" and acao.get("acao") == "navegar":
-                web.validar_url(str((acao.get("argumentos") or {}).get("url") or ""))
+                web.validar_url_do_navegador(str((acao.get("argumentos") or {}).get("url") or ""))
             quem = str(pedido.get("agente") or "")[:40] or None
             try:
                 resultado = await self.chamar(comando, conversa, quem=quem, **argumentos)

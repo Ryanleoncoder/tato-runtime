@@ -86,6 +86,22 @@ def validar_url(url: str) -> str:
     return bruto
 
 
+def validar_url_do_navegador(url: str) -> str:
+    """A URL que a aba do Chrome da pessoa pode abrir: página em http ou https,
+    inclusive local e da rede de casa, porque validar o site em desenvolvimento
+    é uso comum e quem decide o que abrir é quem pede. A recusa de endereço
+    interno fica com `validar_url`, da leitura feita pelo próprio processo."""
+    bruto = str(url or "").strip()
+    if not bruto:
+        raise UrlRecusada("url vazia")
+    partes = urlparse(bruto)
+    if partes.scheme not in ("http", "https"):
+        raise UrlRecusada(f"esquema '{partes.scheme or 'vazio'}' nao e permitido; use http ou https")
+    if not partes.hostname:
+        raise UrlRecusada("url sem host")
+    return bruto
+
+
 def extrair_texto(html: str) -> Dict[str, Any]:
     """HTML para texto legivel. Usa lxml quando existe; regex e o plano B."""
     titulo = ""
