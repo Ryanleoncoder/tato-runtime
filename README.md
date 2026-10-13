@@ -4,150 +4,164 @@
 
 # Tato Runtime
 
-As mãos de um agente de IA: computador e navegador para qualquer agente que fala MCP.
+The hands of an AI agent: a computer and a browser for any agent that speaks MCP.
 
 Claude Code · Codex · Cursor · Gemini CLI
+
+**English** · [Português (BR)](README.pt-BR.md)
 
 </div>
 
 <p align="center">
-  <img src="assets/gifs/pesquisa-de-preco.gif" width="820" alt="O agente pesquisa um preço no navegador e anota no Bloco de notas, com a moldura do Tato na tela">
+  <img src="assets/gifs/pesquisa-de-preco.gif" width="820" alt="The agent looks up a price in the browser and writes it down in Notepad, with the Tato frame on screen">
 </p>
 
-O Tato Runtime é um servidor MCP que dá ao agente três ferramentas: `computador`,
-`browser` e `gravacao`. O agente decide o que fazer; o Tato lê a interface, executa o
-gesto, confere se ele fez efeito e devolve o resultado. Sempre que dá, ele lê a
-estrutura da tela em texto antes de recorrer a uma imagem, o que deixa cada
-passo mais barato e mais preciso.
+Tato Runtime is an MCP server that gives the agent three tools: `computador`
+(computer), `browser` and `gravacao` (recording). The agent decides what to do;
+Tato reads the interface, performs the gesture, checks that it took effect and
+returns the result. Whenever it can, it reads the screen's structure as text
+before falling back to an image, which makes each step cheaper and more
+accurate.
 
-Enquanto o agente usa a máquina, uma moldura mostra o que ele está fazendo, e
-um atalho para tudo na hora.
+While the agent uses the machine, a frame shows what it is doing, and a
+shortcut stops everything instantly.
 
-## O que ele faz
+> Tool names, actions, parameters and environment variables are in Portuguese,
+> exactly as the agent sees them. This README keeps them as-is and explains
+> them in English.
 
-### Computador
+## What it does
 
-- **Enxerga pela estrutura:** lê os elementos da janela pela acessibilidade do
-  sistema (UI Automation no Windows, AT-SPI no Linux) e o texto da janela da
-  frente, com busca por termo. Recorre ao print só quando a estrutura não basta,
-  e pode recortar e ampliar uma região pequena da tela.
-- **Usa mouse e teclado:** clica por número de elemento ou por coordenada,
-  digita, aperta combinações, segura teclas, manda sequências de teclas numa
-  chamada, arrasta com botão do meio e modificadores, rola.
-- **Confere cada gesto:** depois de agir, compara a tela com a de antes e diz se
-  o gesto deu certo, se algo mudou ou se nada aconteceu, para o agente não
-  repetir um clique que já funcionou.
-- **Encontra programas:** lista o que está aberto, na bandeja e instalado, traz
-  uma janela para a frente e abre programas pelo menu do sistema.
-- **Espera a tela:** por um tempo fixo ou até a tela mudar, ignorando o que se
-  anima sozinho.
+### Computer
+
+- **Sees through structure:** reads the window's elements through the system's
+  accessibility layer (UI Automation on Windows, AT-SPI on Linux) and the text
+  of the foreground window, with term search. It only falls back to a
+  screenshot when the structure isn't enough, and can crop and zoom into a
+  small region of the screen.
+- **Uses mouse and keyboard:** clicks by element number or by coordinate,
+  types, presses key combinations, holds keys, sends key sequences in a single
+  call, drags with the middle button and modifiers, scrolls.
+- **Checks every gesture:** after acting, it compares the screen with the one
+  before and says whether the gesture worked, whether something changed or
+  whether nothing happened, so the agent doesn't repeat a click that already
+  worked.
+- **Finds programs:** lists what is open, in the tray and installed, brings a
+  window to the front and opens programs through the system menu.
+- **Waits for the screen:** for a fixed time or until the screen changes,
+  ignoring things that animate on their own.
 
 <p align="center">
-  <img src="assets/gifs/office.gif" width="820" alt="O agente monta uma planilha com gráfico no Excel, formata um comunicado no Word e cria uma apresentação no PowerPoint">
+  <img src="assets/gifs/office.gif" width="820" alt="The agent builds a spreadsheet with a chart in Excel, formats an announcement in Word and creates a presentation in PowerPoint">
 </p>
 
-Também desenha: no Paint, o mascote do Claude Code sai com as formas, o balde e
-o mouse.
+It also draws: in Paint, the Claude Code mascot comes out of shapes, the
+bucket fill and the mouse.
 
 <p align="center">
-  <img src="assets/gifs/paint.gif" width="620" alt="O agente desenha o mascote do Claude Code no Paint">
+  <img src="assets/gifs/paint.gif" width="620" alt="The agent draws the Claude Code mascot in Paint">
 </p>
 
-### Navegador
+### Browser
 
-- A extensão do Chrome abre **uma aba própria por conversa**, num grupo com o
-  nome do agente. O agente não alcança as outras abas da pessoa.
-- Lê a página pela árvore de acessibilidade, pelo DOM, pelos dados
-  estruturados e pelo console, e tira print só quando o texto não basta.
-- Clica, preenche, rola e roda **roteiros**: uma sequência de passos com
-  conferências no meio, que para no primeiro passo que não deu certo.
-- Pela tela, pode navegar no Chrome da pessoa ou num perfil separado só do
-  agente (veja [Configuração](#configuração)).
+- The Chrome extension opens **a dedicated tab per conversation**, in a group
+  named after the agent. The agent can't reach the person's other tabs.
+- Reads the page through the accessibility tree, the DOM, structured data and
+  the console, and only takes a screenshot when text isn't enough.
+- Clicks, fills, scrolls and runs **scripts** (`roteiro`): a sequence of steps
+  with checks in between, which stops at the first step that fails.
+- Through the screen, it can browse in the person's Chrome or in a separate
+  profile just for the agent (see [Configuration](#configuration)).
 
-### Gravação local
+### Local recording
 
-- Quando a pessoa pede para gravar uma demonstração, `gravacao` inicia a captura
-  **após aprovação específica**. Um aviso sempre visível mostra que a tela está
-  sendo gravada e tem um botão **Parar**. Se o aviso não abrir, não há captura.
-- `parar` finaliza; `estado` informa se a captura ainda corre. `ver` devolve
-  **uma prancha com até 12 quadros**. No modo `mudancas`, mostra os instantes
-  antes e depois das maiores alterações numa janela de até 30 segundos. Dá
-  para ampliar uma `area` e estreitar `de`/`ate` em novas chamadas — útil para
-  investigar algo que aparece e some sem enviar centenas de imagens ao agente.
-- `montar` cria um GIF com cortes, velocidade, legendas, cartelas, recorte,
-  esperas encurtadas e borrão por intervalo. Um trecho com outro `id` junta
-  gravações locais finalizadas na ordem indicada.
-- Os quadros e o GIF ficam só em `TATO_HOME/gravacoes/<id>`. O Tato não os envia
-  para fora, não os publica e encerra a captura se a conexão MCP fechar. A
-  captura para automaticamente em até 15 minutos. A gravação pelo MCP está
-  disponível no Windows nesta primeira versão.
+- When the person asks to record a demo, `gravacao` starts capturing **after
+  specific approval**. An always-visible notice shows that the screen is being
+  recorded and has a **Stop** button. If the notice doesn't open, there is no
+  capture.
+- `parar` (stop) finishes it; `estado` (status) says whether capture is still
+  running. `ver` (view) returns **a contact sheet with up to 12 frames**. In
+  `mudancas` (changes) mode, it shows the moments before and after the biggest
+  changes within a window of up to 30 seconds. You can zoom into an `area` and
+  narrow `de`/`ate` (from/to) in new calls — useful for investigating something
+  that appears and disappears without sending hundreds of images to the agent.
+- `montar` (assemble) builds a GIF with cuts, speed, captions, title cards,
+  cropping, shortened waits and blur by interval. A segment with a different
+  `id` joins finished local recordings in the given order.
+- Frames and the GIF stay only in `TATO_HOME/gravacoes/<id>`. Tato doesn't send
+  them anywhere, doesn't publish them and stops capture if the MCP connection
+  closes. Capture stops automatically within 15 minutes. Recording through MCP
+  is available on Windows in this first version.
 
-Por exemplo, depois de `iniciar` e `parar`, o agente pode procurar uma mudança
-rápida e montar apenas os momentos escolhidos:
+For example, after `iniciar` (start) and `parar`, the agent can look for a
+quick change and assemble only the chosen moments:
 
 ```json
-{"acao":"ver","id":"<id devolvido por iniciar>","modo":"mudancas",
+{"acao":"ver","id":"<id returned by iniciar>","modo":"mudancas",
  "de":12,"ate":22,"area":[200,100,700,500],"amostras":8}
 ```
 
 ```json
-{"acao":"montar","id":"<id devolvido por iniciar>","trechos":[
-  {"titulo":"Pesquisa de preço"},
-  {"de":12,"ate":35,"velocidade":3,"legenda":"Comparando as ofertas",
+{"acao":"montar","id":"<id returned by iniciar>","trechos":[
+  {"titulo":"Price research"},
+  {"de":12,"ate":35,"velocidade":3,"legenda":"Comparing the offers",
    "borrar":[
     {"de":15,"ate":19,"caixa":[10,20,150,80]}]}
 ]}
 ```
 
-O modo `TATO_GRAVAR=1`, configurado **antes de iniciar o servidor**, inclui a
-moldura do computador no vídeo; sem ele, a moldura fica fora da captura. O aviso
-de gravação continua visível em ambos os modos. O GIF é para revisão local:
-confira dados pessoais antes de compartilhar.
+`TATO_GRAVAR=1` mode, set **before starting the server**, includes the
+computer frame in the video; without it, the frame stays out of the capture.
+The recording notice stays visible in both modes. The GIF is for local review:
+check for personal data before sharing it.
 
-## Você no controle
+## You're in control
 
-- **Moldura na tela:** borda, seta própria no lugar do cursor, balão com o gesto
-  e uma caixinha com as frases do agente, já que o chat fica atrás da janela.
-  A moldura fica fora dos prints que o agente vê.
-- **Atalho de parada:** `Ctrl + Alt + Shift + S` interrompe o gesto em curso, e
-  nenhum gesto roda depois dele. O agente não consegue acionar esse atalho.
-- **Aprovação:** o primeiro gesto de cada turno pede aprovação pelo cliente MCP.
-  Leituras não pedem.
-- **Não digita no lugar errado:** se outra janela vier para a frente, o teclado
-  para, inclusive no meio de um texto.
-- **Um agente por vez:** dois clientes não disputam o mesmo mouse e teclado.
-- **O que ele nunca faz:** digitar senha (o agente clica no campo e usa o
-  preenchimento automático do navegador) ou apertar combinações que derrubam a
-  sessão ou apagam sem volta. Login e código de verificação passam para a
-  pessoa com `pedir_a_pessoa`.
-- **No navegador:** endereços internos da rede são recusados, e ações que
-  enviam dados ou têm consequência pedem aprovação.
+- **Frame on screen:** a border, its own pointer in place of the cursor, a
+  bubble with the gesture and a small box with the agent's messages, since the
+  chat sits behind the window. The frame stays out of the screenshots the
+  agent sees.
+- **Stop shortcut:** `Ctrl + Alt + Shift + S` interrupts the gesture in
+  progress, and no gesture runs after it. The agent can't trigger this
+  shortcut.
+- **Approval:** the first gesture of each turn asks for approval through the
+  MCP client. Reads don't.
+- **Doesn't type in the wrong place:** if another window comes to the front,
+  the keyboard stops, even in the middle of a text.
+- **One agent at a time:** two clients don't fight over the same mouse and
+  keyboard.
+- **What it never does:** type a password (the agent clicks the field and uses
+  the browser's autofill) or press combinations that kill the session or delete
+  irreversibly. Login and verification codes are handed to the person with
+  `pedir_a_pessoa` (ask the person).
+- **In the browser:** internal network addresses are refused, and actions that
+  submit data or have consequences ask for approval.
 
-## Jogos por turnos
+## Turn-based games
 
 <p align="center">
-  <img src="assets/gifs/jogos.gif" width="820" alt="O agente jogando Porklike por turnos, acertando um inimigo em Tobu Tobu Girl Deluxe e resolvendo uma sala de Libbet and the Magic Floor">
+  <img src="assets/gifs/jogos.gif" width="820" alt="The agent playing Porklike turn by turn, hitting an enemy in Tobu Tobu Girl Deluxe and solving a room in Libbet and the Magic Floor">
 </p>
 
-Jogo por turnos funciona bem: o jogo espera enquanto o agente olha e decide.
-O agente manda vários movimentos numa sequência e lê um recorte ampliado da
-tela para enxergar o que está desenhado.
+Turn-based games work well: the game waits while the agent looks and decides.
+The agent sends several moves in one sequence and reads a zoomed-in crop of
+the screen to see what is drawn.
 
-Jogos da demonstração, gratuitos e distribuídos pelos próprios autores, rodando
-no emulador mGBA:
+Games in the demo, free and distributed by their own authors, running on the
+mGBA emulator:
 
-- **Porklike**, de Krystian Majewski e Lazy Devs, versão Game Boy de Ben Smith.
-- **Tobu Tobu Girl Deluxe**, de Tangram Games, de código aberto.
-- **Libbet and the Magic Floor**, de Damian Yerrick, sobre o Magic Floor de Martin Korth,
-  software livre (licença zlib).
+- **Porklike**, by Krystian Majewski and Lazy Devs, Game Boy version by Ben Smith.
+- **Tobu Tobu Girl Deluxe**, by Tangram Games, open source.
+- **Libbet and the Magic Floor**, by Damian Yerrick, based on Martin Korth's
+  Magic Floor, free software (zlib license).
 
-Jogo em tempo real não é o forte: cada volta de olhar e decidir leva alguns
-segundos. No corte do Tobu Tobu Girl o agente pausa o emulador para pensar.
+Real-time games aren't its strength: each look-and-decide loop takes a few
+seconds. In the Tobu Tobu Girl clip the agent pauses the emulator to think.
 
-## Instalar
+## Install
 
-Requisitos: Python 3.11 ou mais novo; Windows 10 ou 11, ou Linux com X11;
-Google Chrome para o navegador.
+Requirements: Python 3.11 or newer; Windows 10 or 11, or Linux with X11;
+Google Chrome for the browser.
 
 ```bash
 git clone https://github.com/Ryanleoncoder/tato-runtime.git
@@ -155,10 +169,10 @@ cd tato-runtime
 pip install -e .
 ```
 
-O Tato roda com `python -m tato`. Nos exemplos abaixo, `python` é o Python
-onde você instalou; se usou um venv, ponha o caminho do Python dele.
+Tato runs with `python -m tato`. In the examples below, `python` is the Python
+you installed it into; if you used a venv, put the path to its Python.
 
-### Registrar no seu agente
+### Register with your agent
 
 **Claude Code**
 
@@ -166,7 +180,7 @@ onde você instalou; se usou um venv, ponha o caminho do Python dele.
 claude mcp add tato -- python -m tato --aprovacao-no-cliente
 ```
 
-**Codex**, em `~/.codex/config.toml`:
+**Codex**, in `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.tato]
@@ -174,7 +188,7 @@ command = "python"
 args = ["-m", "tato"]
 ```
 
-**Cursor** (`~/.cursor/mcp.json`) e **Gemini CLI** (`~/.gemini/settings.json`):
+**Cursor** (`~/.cursor/mcp.json`) and **Gemini CLI** (`~/.gemini/settings.json`):
 
 ```json
 {
@@ -184,99 +198,102 @@ args = ["-m", "tato"]
 }
 ```
 
-`--aprovacao-no-cliente` é para cliente que já pede aprovação antes de cada
-chamada de ferramenta, como o Claude Code. Sem ele, o Tato pergunta pelo
-próprio protocolo MCP.
+`--aprovacao-no-cliente` (approval in the client) is for clients that already
+ask for approval before each tool call, like Claude Code. Without it, Tato asks
+through the MCP protocol itself.
 
-### Extensão do navegador
+### Browser extension
 
-Uma vez só: em `chrome://extensions`, ative o modo do desenvolvedor, escolha
-"Carregar sem compactação" e selecione a pasta `tato/extensao`. Ela se conecta
-sozinha quando o agente inicia o Tato. Detalhes no
-[guia da extensão](tato/extensao/README.md).
+Once only: in `chrome://extensions`, turn on developer mode, choose "Load
+unpacked" and select the `tato/extensao` folder. It connects on its own when
+the agent starts Tato. Details in the
+[extension guide](tato/extensao/README.md) (in Portuguese).
 
-## Configuração
+## Configuration
 
-Tudo por variável de ambiente, com padrões que funcionam sem configurar nada.
+Everything through environment variables, with defaults that work without any
+setup.
 
-| Variável | Padrão | O que faz |
+| Variable | Default | What it does |
 |---|---|---|
-| `TATO_COMPUTADOR_ATALHO` | `ctrl+alt+shift+s` | Atalho de parada. |
-| `TATO_COMPUTADOR_RITMO` | `1` | Com `0`, o ritmo automático digita rápido em todo programa, não só nos editores. |
-| `TATO_COMPUTADOR_DESLIZAR` | `1` | O mouse desliza até o alvo; `0` pula direto. |
-| `TATO_GRAVAR` | `0` | Com `1`, a moldura aparece em gravações de tela (OBS, Xbox Game Bar, Ferramenta de Captura). Ela também entra no print que o agente recebe. Só no Windows. |
-| `TATO_NAVEGADOR_PERFIL` | `pessoa` | Em que Chrome navegar pela tela: `pessoa` (o seu, com suas contas) ou `agente` (perfil separado). |
-| `TATO_NAVEGADOR_AGENTE_NOME` | `Agente` | Nome do perfil separado: vira "Chrome do <nome>". Crie o atalho com `python -m tato.computador.perfil_do_agente <nome>`. |
-| `TATO_BROWSER_OCIOSO_MIN` | `0` | Fecha a sessão do navegador depois de tantos minutos parada; `0` não fecha. |
-| `TATO_ORIGENS_LOCAIS_LIBERADAS` | vazio | Endereços locais que o navegador pode abrir, como `http://localhost:3000`, separados por vírgula. |
-| `TATO_PORTA` | `47812` | Porta local onde a extensão encontra o Tato. |
-| `TATO_HOME` | `~/.tato` | Onde o Tato guarda o que precisa entre execuções. |
+| `TATO_COMPUTADOR_ATALHO` | `ctrl+alt+shift+s` | Stop shortcut. |
+| `TATO_COMPUTADOR_RITMO` | `1` | With `0`, the automatic pace types fast in every program, not only in editors. |
+| `TATO_COMPUTADOR_DESLIZAR` | `1` | The mouse glides to the target; `0` jumps straight there. |
+| `TATO_GRAVAR` | `0` | With `1`, the frame shows up in screen recordings (OBS, Xbox Game Bar, Snipping Tool). It also appears in the screenshot the agent receives. Windows only. |
+| `TATO_NAVEGADOR_PERFIL` | `pessoa` | Which Chrome to browse through the screen: `pessoa` (yours, with your accounts) or `agente` (separate profile). |
+| `TATO_NAVEGADOR_AGENTE_NOME` | `Agente` | Name of the separate profile: it becomes "Chrome do <name>". Create the shortcut with `python -m tato.computador.perfil_do_agente <name>`. |
+| `TATO_BROWSER_OCIOSO_MIN` | `0` | Closes the browser session after this many idle minutes; `0` never closes it. |
+| `TATO_ORIGENS_LOCAIS_LIBERADAS` | empty | Local addresses the browser may open, like `http://localhost:3000`, comma-separated. |
+| `TATO_PORTA` | `47812` | Local port where the extension finds Tato. |
+| `TATO_HOME` | `~/.tato` | Where Tato keeps what it needs between runs. |
 
-## Ações
+## Actions
 
 ### `computador`
 
-| Ação | O que faz |
+| Action | What it does |
 |---|---|
-| `ver` | Print da tela; com `marcar`, numera os elementos; com `regiao`, recorta e amplia. |
-| `elementos` | Elementos da janela em foco pela acessibilidade, sem imagem. |
-| `ler` | Texto da janela da frente; com `procurar`, só as linhas com o termo. |
-| `janelas` | Janelas abertas e qual está em foco. |
-| `programas` | Programas abertos, na bandeja e instalados. |
-| `abrir` / `focar` / `fechar` | Abre um programa pelo menu do sistema / traz uma janela para a frente / fecha uma janela como o X dela (o programa ainda pergunta se quer salvar). |
-| `clicar`, `clicar_duas`, `clicar_direito`, `mover` | Por número de elemento ou coordenada do print. Clique por coordenada depois de outros gestos confere se a tela em volta do alvo ainda é a do print; `confiar_no_print` libera quando a mudança é esperada. |
-| `arrastar` / `rolar` | Com botão e modificadores. |
-| `digitar` | Texto no campo em foco, com `ritmo`: `natural` (pausas de mão, para sites), `rapido`, `instantaneo` (tudo de uma vez) ou `automatico` (rápido em editores locais, natural no resto). |
-| `tecla` | Uma combinação, segurada por um tempo, ou uma `sequencia` de teclas. Aceita letras, números, teclas especiais e `= - , .` (o zoom é `ctrl+=` e `ctrl+-`). |
-| `invocar` / `definir_valor` | Aciona ou preenche um elemento pela acessibilidade, sem mouse. |
-| `esperar` | Tempo fixo ou `ate_mudar`. |
-| `pedir_a_pessoa` / `encerrar` | Passa a vez para a pessoa / libera a sessão. |
+| `ver` | Screenshot; with `marcar`, numbers the elements; with `regiao`, crops and zooms. |
+| `elementos` | Elements of the focused window through accessibility, no image. |
+| `ler` | Text of the foreground window; with `procurar`, only the lines containing the term. |
+| `janelas` | Open windows and which one has focus. |
+| `programas` | Programs that are open, in the tray and installed. |
+| `abrir` / `focar` / `fechar` | Opens a program through the system menu / brings a window to the front / closes a window like its X button (the program still asks whether to save). |
+| `clicar`, `clicar_duas`, `clicar_direito`, `mover` | Click, double-click, right-click, move — by element number or screenshot coordinate. A coordinate click after other gestures checks that the screen around the target still matches the screenshot; `confiar_no_print` allows it when the change is expected. |
+| `arrastar` / `rolar` | Drag / scroll, with button and modifiers. |
+| `digitar` | Types text into the focused field, with `ritmo` (pace): `natural` (human-like pauses, for websites), `rapido` (fast), `instantaneo` (all at once) or `automatico` (fast in local editors, natural elsewhere). |
+| `tecla` | A key combination, held for a while, or a `sequencia` (sequence) of keys. Accepts letters, numbers, special keys and `= - , .` (zoom is `ctrl+=` and `ctrl+-`). |
+| `invocar` / `definir_valor` | Triggers or fills an element through accessibility, without the mouse. |
+| `esperar` | Waits a fixed time or `ate_mudar` (until it changes). |
+| `pedir_a_pessoa` / `encerrar` | Hands over to the person / releases the session. |
 
-Todo gesto aceita `dizer`: uma frase curta que aparece na caixinha da moldura.
+Every gesture accepts `dizer` (say): a short sentence that appears in the
+frame's message box.
 
 ### `browser`
 
-| Ação | O que faz |
+| Action | What it does |
 |---|---|
-| `navegar` | Abre um endereço e devolve a árvore da página com referências. |
-| `snapshot` | Lê a página de novo. |
-| `clicar` / `digitar` / `rolar` | Pela referência ou pelo texto do elemento. |
-| `roteiro` | Vários passos de uma vez, com `esperar`, `conferir` e `pensar` no meio. |
-| `imagens` | Print da página, quando o texto não basta. |
-| `console` | Mensagens do console da página. |
-| `encerrar` | Encerra a sessão do navegador. |
+| `navegar` | Opens an address and returns the page tree with references. |
+| `snapshot` | Reads the page again. |
+| `clicar` / `digitar` / `rolar` | Click / type / scroll, by the element's reference or text. |
+| `roteiro` | Several steps at once, with `esperar`, `conferir` and `pensar` (wait, check, think) in between. |
+| `imagens` | Screenshot of the page, when text isn't enough. |
+| `console` | The page's console messages. |
+| `encerrar` | Ends the browser session. |
 
 ### `gravacao`
 
-| Ação | O que faz |
+| Action | What it does |
 |---|---|
-| `iniciar` | Começa a gravar a tela, com aprovação e aviso visível; aceita `fps`, `largura`, `caixa` e `minutos`. |
-| `parar` / `estado` | Finaliza a gravação / diz se ela ainda corre. |
-| `ver` | Uma prancha com até 12 quadros, por `intervalo` ou pelas maiores `mudancas`, com `de`, `ate` e `area`. |
-| `montar` | O GIF a partir de `trechos` (cortes, cartelas, legendas, velocidade, recorte, borrão); `nome` dá nome ao arquivo. |
+| `iniciar` | Starts recording the screen, with approval and a visible notice; accepts `fps`, `largura` (width), `caixa` (box) and `minutos` (minutes). |
+| `parar` / `estado` | Finishes the recording / says whether it's still running. |
+| `ver` | A contact sheet with up to 12 frames, by `intervalo` (interval) or by the biggest `mudancas` (changes), with `de`, `ate` and `area`. |
+| `montar` | Builds the GIF from `trechos` (segments: cuts, title cards, captions, speed, crop, blur); `nome` names the file. |
 
-## Como funciona
+## How it works
 
-- Na conexão, o servidor manda ao agente, como instruções MCP, o que vale para
-  as três ferramentas: qual usar, falar pela moldura, passar o login para a
-  pessoa e encerrar ao terminar. Cada ferramenta descreve só o próprio uso.
-- O servidor fala MCP por stdio. Cada chamada envia progresso e aceita
-  cancelamento; uma chamada que não volta a tempo é abandonada e o agente
-  recebe o motivo.
-- O primeiro Tato que sobe abre a porta local da extensão; os outros passam os
-  comandos por ele.
-- A moldura segue na tela enquanto a sessão estiver aberta; `encerrar` a tira.
+- On connection, the server sends the agent, as MCP instructions, what applies
+  to all three tools: which one to use, talking through the frame, handing
+  login to the person and ending when done. Each tool describes only its own
+  usage.
+- The server speaks MCP over stdio. Each call sends progress and accepts
+  cancellation; a call that doesn't return in time is abandoned and the agent
+  receives the reason.
+- The first Tato to start opens the extension's local port; the others relay
+  their commands through it.
+- The frame stays on screen while the session is open; `encerrar` removes it.
 
-## Limites
+## Limitations
 
-- Jogos em tempo real: lentos demais para o ciclo de olhar e decidir.
-- Jogos online: não use. Automatizar partidas é proibido na maioria dos jogos, e
-  sistemas anti-cheat detectam a entrada simulada.
-- Janelas de administrador: o Windows não deixa um programa comum controlar uma
-  janela elevada.
-- macOS e Linux com Wayland ainda não são suportados.
+- Real-time games: too slow for the look-and-decide loop.
+- Online games: don't. Automating matches is forbidden in most games, and
+  anti-cheat systems detect simulated input.
+- Administrator windows: Windows doesn't let a regular program control an
+  elevated window.
+- macOS and Linux with Wayland aren't supported yet.
 
-## Desenvolvimento
+## Development
 
 ```bash
 pip install -e ".[dev]"
@@ -284,9 +301,9 @@ python -m pytest
 node --test tato/extensao/service-worker.test.cjs
 ```
 
-Os testes de Linux (X11 e AT-SPI) rodam só onde há Xvfb; no Windows eles são
-pulados.
+The Linux tests (X11 and AT-SPI) only run where Xvfb is available; on Windows
+they are skipped.
 
-## Licença
+## License
 
 [MIT](LICENSE).
